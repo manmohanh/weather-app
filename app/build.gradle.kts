@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     kotlin("kapt")
-    alias(libs.plugins.daggerHiltAndroid)
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -21,6 +21,7 @@ android {
             useSupportLibrary = true
         }
     }
+
 
     buildTypes {
         release {
@@ -65,7 +66,10 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.dagger.hilt)
-    implementation(libs.kotlin.kapt)
+    kapt(libs.kotlin.kapt)
+    implementation(libs.retrofit)
+    implementation(libs.gson.converter)
+    implementation(libs.okHttp)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
