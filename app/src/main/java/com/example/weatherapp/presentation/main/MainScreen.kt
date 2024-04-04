@@ -1,76 +1,94 @@
 package com.example.weatherapp.presentation.main
 
-import androidx.compose.foundation.layout.Arrangement
+import android.annotation.SuppressLint
+import android.util.Log
+import androidx.compose.foundation.Indication
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
-
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(
-    cityState: MutableState<String>,
-    res: WeatherDataState
-) {
-    Column(modifier = Modifier
-        .fillMaxSize()){
-        TextField(
-            value = cityState.value,
-            onValueChange = { cityState.value = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    top = 36.dp,
-                    start = 16.dp,
-                    end = 16.dp
-                ),
-            
-        )
-        Spacer(modifier = Modifier.size(16.dp))
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f)){
-
-            if (res.isLoading){
-                CircularProgressBar()
-            }
-
-            if (res.error.isNotBlank()){
-                ErrorMessage()
-            }
-
-            res.data?.let {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ){
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(text = it.location.name)
-                        Text(text = it.current.condition.text)
-                        Text(text = it.current.temp_c.toString())
-                    }
-                }
-            }
-
+fun MainScreen(onSearch: (String) -> Unit) {
+    Scaffold(topBar = {
+        MySearchBar(){
+            onSearch(it)
         }
+    }) {
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MySearchBar(onSearch: (String)->Unit) {
+
+    var searchState by remember {
+        mutableStateOf("")
+    }
+    onSearch(searchState)
+    var query by remember {
+        mutableStateOf("")
+    }
+    var isActive by remember {
+        mutableStateOf(false)
+    }
+
+    SearchBar(
+        query = query,
+        onQueryChange = { query = it },
+        onSearch = {
+            searchState = it
+        },
+        active = isActive,
+        onActiveChange = { isActive = true },
+        trailingIcon = {
+            if (isActive) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    modifier = Modifier.clickable {
+                        isActive = false
+                    }
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier.clickable {
+                        isActive = true
+                    }
+                )
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        placeholder = { Text(text = "Search a place") }
+    ) {
+
     }
 }
 
@@ -79,7 +97,7 @@ fun CircularProgressBar() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         CircularProgressIndicator()
     }
 }
@@ -89,7 +107,7 @@ fun ErrorMessage() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         Text(text = "No matching data found")
     }
 }
