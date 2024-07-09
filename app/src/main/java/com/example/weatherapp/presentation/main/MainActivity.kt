@@ -30,10 +30,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen(){
-                        viewModel.getWeatherData(city = it)
-                    }
-
+                    MainScreen(viewModel)
                 }
             }
         }
@@ -42,11 +39,3 @@ class MainActivity : ComponentActivity() {
 
 
 
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WeatherAppTheme {
-
-    }
-}

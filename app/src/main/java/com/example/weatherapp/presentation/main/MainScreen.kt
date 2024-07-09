@@ -1,113 +1,147 @@
 package com.example.weatherapp.presentation.main
 
-import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.foundation.Indication
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(onSearch: (String) -> Unit) {
-    Scaffold(topBar = {
-        MySearchBar(){
-            onSearch(it)
-        }
-    }) {
+fun MainScreen(viewModel: MainViewModel) {
 
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MySearchBar(onSearch: (String)->Unit) {
-
-    var searchState by remember {
+    var cityState by remember {
         mutableStateOf("")
     }
-    onSearch(searchState)
-    var query by remember {
-        mutableStateOf("")
-    }
-    var isActive by remember {
-        mutableStateOf(false)
-    }
 
-    SearchBar(
-        query = query,
-        onQueryChange = { query = it },
-        onSearch = {
-            searchState = it
-        },
-        active = isActive,
-        onActiveChange = { isActive = true },
-        trailingIcon = {
-            if (isActive) {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = null,
-                    modifier = Modifier.clickable {
-                        isActive = false
-                    }
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    modifier = Modifier.clickable {
-                        isActive = true
-                    }
-                )
-            }
-        },
+    val res = viewModel.weatherData.value
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        placeholder = { Text(text = "Search a place") }
+            .padding(
+                start = 12.dp,
+                top = 16.dp,
+                bottom = 8.dp,
+                end = 12.dp
+            )
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = cityState,
+                onValueChange = { cityState = it },
+                label = { Text(text = "Search") },
+                modifier = Modifier.weight(1f),
+                maxLines = 1
+            )
+
+            IconButton(onClick = {
+                viewModel.getWeatherData(cityState)
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search for any location"
+                )
+            }
+        }
+
+        Box(modifier = Modifier.weight(1f)) {
+
+            if (res.data != null) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 8.dp)
+                        .verticalScroll(
+                            rememberScrollState()
+                        ),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    AsyncImage(
+                        model = "https:${res.data.current.condition.icon}".replace("64x64","128x128"),
+                        contentDescription = null,
+                        modifier = Modifier.size(160.dp)
+                    )
+                    Text(
+                        text = res.data.current.condition.text,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        text = "${res.data.current.temp_c} ° C",
+                        style = MaterialTheme.typography.displaySmall
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = "${res.data.location.name},${res.data.location.country}",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+
+                    }
+                }
+            }
+
+            if (res.error.isNotEmpty()){
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = res.error,
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (res.isLoading) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
 
     }
+
 }
 
-@Composable
-fun CircularProgressBar() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
-}
 
-@Composable
-fun ErrorMessage() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "No matching data found")
-    }
-}
+
+
