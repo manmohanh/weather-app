@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,7 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 
 @Composable
@@ -111,6 +115,24 @@ fun MainScreen(viewModel: MainViewModel) {
                         )
 
                     }
+                    
+                    
+                    Card(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)) {
+                        Row {
+                            WeatherCurrentKeyVal(
+                                key = "Humidity",
+                                value = "${res.data.current.humidity}"
+                            )
+
+                            WeatherCurrentKeyVal(
+                                key = "Precipitation",
+                                value = "${res.data.current.precip_mm}"
+                            )
+                        }
+                    }
+                    
                 }
             }
 
@@ -139,7 +161,21 @@ fun MainScreen(viewModel: MainViewModel) {
         }
 
     }
+}
 
+@Composable
+fun WeatherCurrentKeyVal(
+    key: String,
+    value: String
+) {
+
+    Column(
+        modifier = Modifier.padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = key, style = MaterialTheme.typography.titleMedium)
+        Text(text = value, style = MaterialTheme.typography.titleMedium, color = Color.Gray)
+    }
 }
 
 
